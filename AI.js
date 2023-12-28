@@ -117,18 +117,96 @@ class AI extends Phaser.GameObjects.Sprite {
         }
     }
 
+    jps(start, target) {
+        let openList = [start];
+        let cameFrom = new Map();
+
+        while (openList.length > 0) {
+            // console.log(cameFrom.length);
+            let current = openList.pop();
+
+            if (current.x === target.x && current.y === target.y) {
+                return this.reconstructPath(cameFrom, current);
+            }
+
+            // 获取当前节点的所有邻居
+            let neighbors = this.getNeighbors(current);
+            for (let neighbor of neighbors) {
+                if (!cameFrom.has(neighbor) && !this.scene.isWall(neighbor.x, neighbor.y)) {
+                    cameFrom.set(neighbor, current);
+                    openList.push(neighbor);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    getNeighbors(node) {
+        return [
+            { x: node.x + 1, y: node.y },
+            { x: node.x - 1, y: node.y },
+            { x: node.x, y: node.y + 1 },
+            { x: node.x, y: node.y - 1 }
+            // 可以添加对角方向的邻居，如果需要
+        ];
+    }
+
+    reconstructPath(cameFrom, current) {
+        let path = [];
+        while (cameFrom.has(current)) {
+            path.unshift(current);
+            current = cameFrom.get(current);
+        }
+        return path;
+    }
+
+    followPath(path) {
+        if (path && path.length > 0) {
+            let nextPoint = path[0];
+            this.moveToPoint(nextPoint);
+        }
+    }
+
+    moveToPoint(point) {
+        // 计算方向
+        const dx = point.x - this.x;
+        const dy = point.y - this.y;
+        const angle = Math.atan2(dy, dx);
+
+        // 根据方向设置速度
+        const speed = 200; // 假设AI的速度为200
+        this.body.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
+        // console.log(Math.cos(angle) * speed, Math.sin(angle) * speed);
+        // 更新动画和朝向
+        this.updateAnimationAndOrientation(dx, dy);
+    }
+
+    updateAnimationAndOrientation(dx, dy) {
+        // 根据移动方向更新动画
+        if (Math.abs(dx) > Math.abs(dy)) {
+            this.anims.play(dx > 0 ? 'right' : 'left', true);
+        } else {
+            this.anims.play(dy > 0 ? 'down' : 'up', true);
+        }
+    }
+
     update() {
         // console.log(this.direction, this.x, this.y);
        
-        if (this.scene.isLineOfSightClear(this, this.scene.player)) {
-            // 跳点搜索
-            this.moveToPlayer(this.scene.player);
-        } else {
-            if (this.isObstacleAhead()) {
-                this.chooseDirection();
-                // console.log(this.isObstacleAhead());
-            }
-        }
+        // if (this.scene.isLineOfSightClear(this, this.scene.player)) {
+        //     // 跳点搜索
+        //     this.moveToPlayer(this.scene.player);
+        // } else {
+        //     if (this.isObstacleAhead()) {
+        //         this.chooseDirection();
+        //         // console.log(this.isObstacleAhead());
+        //     }
+        // }
+
+        let path = this.jps({ x: this.x, y: this.y }, { x: this.scene.player.x, y: this.scene.player.y });
+        // console.log(path); array(0)
+        // this.followPath(path);
     }
 }
 
