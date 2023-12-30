@@ -1,4 +1,5 @@
 import GameScene from './GameScene.js';
+import MainMenu from './MainMenu.js';
 // import Preloader from './Preloader.js';
 
 const config = {
@@ -15,7 +16,7 @@ const config = {
         }
     },
     scene:
-    [GameScene]
+    [MainMenu, GameScene]
 };
 
 new Phaser.Game(config);

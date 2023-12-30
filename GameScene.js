@@ -1,7 +1,6 @@
 import Player from './Player.js';
 import Coin from './Coin.js';
 import AI from './AI.js'
-
 class GameScene extends Phaser.Scene {
     
     constructor() {
@@ -10,7 +9,7 @@ class GameScene extends Phaser.Scene {
     
     preload() {
         this.load.image('tiles', 'assets/tilemap.jpg');
-        this.load.tilemapCSV('map', 'assets/game_map.csv');
+        this.load.tilemapCSV('map', 'assets/tile1.csv');
         this.load.spritesheet('player', 'assets/Dale.png', {
             frameWidth: 16,
             frameHeight: 16
@@ -28,16 +27,31 @@ class GameScene extends Phaser.Scene {
     create() {
         this.map = this.make.tilemap({ key: 'map', tileWidth: 20, tileHeight: 20 });
         const tileset = this.map.addTilesetImage('tiles');
-
+        
         const layer = this.map.createLayer(0, tileset, 0, 0);
         layer.setScale(2);
         
-        
         this.map.setCollisionBetween(1, 1);    
 
+        // astarPlugin = this.plugins.add(Phaser.Plugin.AStar);
+        // astarPlugin.setAStarMap(map, layer);
+
+        // const layer_2 = this.map.createStaticLayer('objects', tileset, 0, 0);
+        // this.grid	= layer_2.layer.data;
+        this.grid = [];
+        for (let y = 0; y < this.map.height; y++) {
+            let col = [];
+            for (let x = 0; x < this.map.width; x++) {
+                let tile = this.map.getTileAt(x, y);
+                col.push(tile && tile.index === 1 ? 1 : 0); // 如果是障碍物，则为1，否则为0
+            }
+            this.grid.push(col);
+        }
+        
         // 地图和其他元素的创建
         this.player = new Player(this, 100, 100);
         // 添加物理特性
+        this.player.setScale(2);
         this.physics.world.enable(this.player);
         this.player.body.setSize(16, 16, false);
         this.player.body.setGravityY(0);
@@ -45,6 +59,7 @@ class GameScene extends Phaser.Scene {
 
         
         this.ai = new AI(this, 940, 60);
+        this.ai.setScale(2);
         this.physics.world.enable(this.ai);
         this.ai.body.setSize(16, 16, false);
         this.ai.body.setGravityY(0);
@@ -176,9 +191,19 @@ class GameScene extends Phaser.Scene {
                 this.scoreText.setText('Score: ' + this.score);
             }
         });
-
+        
         this.ai.update();
 
+        this.physics.add.overlap(this.player, this.ai, () => {
+            this.physics.pause(); // 暂停物理引擎，停止游戏
+            this.endText = this.add.text(this.scale.width - 420, 360, 'Wasted', { fontSize: '60px', fill: '#ffffff' });
+        }, null, this);
+        
+        if (this.num == 0) {
+           this.physics.pause(); // 暂停物理引擎，停止游戏
+        this.endText = this.add.text(this.scale.width - 420, 360, 'Win', { fontSize: '60px', fill: '#ffffff' }); 
+        }
+        // if(this.score == 100) 
         // if (this.isLineOfSightClear(this.player, this.ai)) {
         //     this.ai.isJPS = true;
         // }

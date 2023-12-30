@@ -3,10 +3,10 @@ class Player extends Phaser.GameObjects.Sprite{
         super(scene, x, y, 'player', 1);
         this.scene = scene;
         this.scene.add.existing(this);
-        this.setScale(2);
+        this.setScale();
         //this.scene.physics.world.enable(this);
 
-        this.setSize(16, 16, false);
+        this.setSize(8, 8, false);
         this.cursors = this.scene.input.keyboard.createCursorKeys();
         // 玩家控制设置
         this.anims.create({
