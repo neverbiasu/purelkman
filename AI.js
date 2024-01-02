@@ -1,3 +1,4 @@
+import Dijkstra from "./Dijstra.js";
 class AI extends Phaser.GameObjects.Sprite {
     constructor(scene, x, y) {
         super(scene, x, y, 'AI', 1);
@@ -26,27 +27,29 @@ class AI extends Phaser.GameObjects.Sprite {
         // this.goal = new Phaser.Point(goalX, goalY);
         // this.path = astarPlugin.findPath(start, goal);
 
+        this.dijkstra = new Dijkstra(this.scene.grid);
+
         this.anims.create({
             key: 'left',
-            frames: this.anims.generateFrameNumbers('AI', { start: 8, end: 9 }),
+            frames: this.anims.generateFrameNumbers('AI', { start: 2, end: 2 }),
             frameRate: 10,
             repeat: -1
         });
         this.anims.create({
             key: 'right',
-            frames: this.anims.generateFrameNumbers('AI', { start: 1, end: 2 }),
+            frames: this.anims.generateFrameNumbers('AI', { start: 3, end: 3 }),
             frameRate: 10,
             repeat: -1
         });
         this.anims.create({
             key: 'up',
-            frames: this.anims.generateFrameNumbers('AI', { start: 11, end: 13 }),
+            frames: this.anims.generateFrameNumbers('AI', { start: 1, end: 1 }),
             frameRate: 10,
             repeat: -1
         });
         this.anims.create({
             key: 'down',
-            frames: this.anims.generateFrameNumbers('AI', { start: 4, end: 6 }),
+            frames: this.anims.generateFrameNumbers('AI', { start: 0, end: 0 }),
             frameRate: 10,
             repeat: -1
         });
@@ -325,15 +328,15 @@ class AI extends Phaser.GameObjects.Sprite {
     update() {
         // console.log(this.direction, this.x, this.y);
         //    1st version
-        // if (this.scene.isLineOfSightClear(this, this.scene.player)) {
-        //     // 跳点搜索
-        //     this.moveToPlayer(this.scene.player);
-        // } else {
-        //     if (this.isObstacleAhead()) {
-        //         this.chooseDirection();
-        //         // console.log(this.isObstacleAhead());
-        //     }
-        // }
+        if (this.scene.isLineOfSightClear(this, this.scene.player)) {
+            // 跳点搜索
+            this.moveToPlayer(this.scene.player);
+        } else {
+            if (this.isObstacleAhead()) {
+                this.chooseDirection();
+                // console.log(this.isObstacleAhead());
+            }
+        }
         // 2nd version
         // let path = this.jps({ x: this.x, y: this.y }, { x: this.scene.player.x, y: this.scene.player.y });
         // // console.log(path); array(0)
@@ -366,20 +369,20 @@ class AI extends Phaser.GameObjects.Sprite {
         
         // 4th version
         
-        let start = { x: Math.floor(this.x / 40), y: Math.floor(this.y / 40) };
-        let goal = { x: Math.floor(this.scene.player.x / 40), y: Math.floor(this.scene.player.y / 40) };
-        console.log(start);
+        // let start = { x: Math.floor(this.x / 40), y: Math.floor(this.y / 40) };
+        // let goal = { x: Math.floor(this.scene.player.x / 40), y: Math.floor(this.scene.player.y / 40) };
+        // console.log(start);
 
-        let path = this.aStarSearch(start, goal);
-        // console.log(path)
-        if (path && path.length > 0) {
-            this.followPath(path);
-        }
+        // let path = this.aStarSearch(start, goal);
+        // // console.log(path)
+        // if (path && path.length > 0) {
+        //     this.followPath(path);
+        // }
         
         // 5th version
         // this.followPath(this.path);
 
-        // 6th version 
+        // 6th version
         // prevPosition = { x: this.scene.player.x, y: this.scene.player.y };
         // let start = { x: Math.floor(this.x / 40), y: Math.floor(this.y / 40) };
         // let goal = { x: Math.floor(this.scene.player.x / 40), y: Math.floor(this.scene.player.y / 40) };
@@ -388,6 +391,12 @@ class AI extends Phaser.GameObjects.Sprite {
         //     // Follow the path
         //     this.followPath(path);
         // }
+        
+        // 7th version
+        let start = { x: Math.floor(this.x / 40), y: Math.floor(this.y / 40) };
+        let goal = { x: Math.floor(this.scene.player.x / 40), y: Math.floor(this.scene.player.y / 40) };
+        let path = this.dijkstra.findPath(start, goal);
+        this.followPath(path);
     }
 }
 export default AI

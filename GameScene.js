@@ -8,17 +8,17 @@ class GameScene extends Phaser.Scene {
     }
     
     preload() {
-        this.load.image('tiles', 'assets/tilemap.jpg');
+        this.load.image('tiles', 'assets/Tile.jpg');
         this.load.tilemapCSV('map', 'assets/tile1.csv');
         this.load.spritesheet('player', 'assets/Dale.png', {
             frameWidth: 16,
             frameHeight: 16
         });
-        this.load.spritesheet("coin", "assets/coin-16x16x4.png", {
+        this.load.spritesheet("coin", "assets/Coin.png", {
             frameWidth: 16,
             frameHeight: 16
         });
-        this.load.spritesheet('AI', 'assets/spaceman.png', {
+        this.load.spritesheet('AI', 'assets/Black.png', {
             frameWidth: 16,
             frameHeight: 16
         });
@@ -58,13 +58,17 @@ class GameScene extends Phaser.Scene {
         this.player.body.setCollideWorldBounds(true);
 
         
-        this.ai = new AI(this, 940, 60);
+        this.ai = new AI(this, 450, 70);
         this.ai.setScale(2);
         this.physics.world.enable(this.ai);
         this.ai.body.setSize(16, 16, false);
         this.ai.body.setGravityY(0);
         this.ai.body.setCollideWorldBounds(true);
 
+        this.PLAYER_WALKED_TILE = 2; 
+        this.AI_WALKED_TILE = 3; 
+        this.prevPlayerPos = { x: this.player.x, y: this.player.y };
+        this.prevAIPos = { x: this.ai.x, y: this.ai.y };
 
         this.coins = [];
 
@@ -160,6 +164,32 @@ class GameScene extends Phaser.Scene {
         return true;
     }
     
+    revertTile(x, y) {
+        const originalIndex = 1
+       
+        const tileX = Math.floor(x / this.map.tileWidth);
+        const tileY = Math.floor(y / this.map.tileHeight);
+        let tile = this.map.getTileAt(tileX, tileY);
+        if (tile) {
+            tile.index = originalIndex;
+        }
+    }
+    checkAndUpdateTile(entity, prevPos, tileType) {
+        if (entity.x !== prevPos.x || entity.y !== prevPos.y) {
+            // 转换坐标系
+            const tileX = Math.floor(prevPos.x / 40);
+            const tileY = Math.floor(prevPos.y / 40);
+
+            // 找到之前位置的砖块
+            let tile = this.map.getTileAt(tileX, tileY);
+
+            // 如果有砖块即切换
+            if (tile) {
+                tile.index = tileType;
+                setTimeout(() => revertTile(entity.x, entity.y), 1000);
+            }
+        }
+    }
     // isLineOfSightClear(grid, ai, player) {
     //     // 计算方向
     //     let dx = Math.sign(player.x - ai.x);
@@ -196,17 +226,24 @@ class GameScene extends Phaser.Scene {
 
         this.physics.add.overlap(this.player, this.ai, () => {
             this.physics.pause(); // 暂停物理引擎，停止游戏
-            this.endText = this.add.text(this.scale.width - 420, 360, 'Wasted', { fontSize: '60px', fill: '#ffffff' });
+            this.endText = this.add.text(this.scale.width - 560, 360, 'Wasted', { fontSize: '60px', fill: '#ffffff' });
         }, null, this);
         
         if (this.num == 0) {
            this.physics.pause(); // 暂停物理引擎，停止游戏
-        this.endText = this.add.text(this.scale.width - 420, 360, 'Win', { fontSize: '60px', fill: '#ffffff' }); 
+        this.endText = this.add.text(this.scale.width - 550, 360, 'Win', { fontSize: '60px', fill: '#ffffff' }); 
         }
         // if(this.score == 100) 
         // if (this.isLineOfSightClear(this.player, this.ai)) {
         //     this.ai.isJPS = true;
         // }
+
+        this.checkAndUpdateTile(this.player, this.prevPlayerPos, this.PLAYER_WALKED_TILE);
+        this.checkAndUpdateTile(this.ai, this.prevAIPos, this.AI_WALKED_TILE);
+
+        // 更新过去位置
+        this.prevPlayerPos = { x: this.player.x, y: this.player.y };
+        this.prevAIPos = { x: this.ai.x, y: this.ai.y };
     }
 }
 

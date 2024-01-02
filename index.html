@@ -2,20 +2,34 @@
 <html>
 
 <head>
+    
     <meta charset="UTF-8" />
     <title>Game</title>
     <script src="./phaser.min.js"></script>
     <script src="./easystar-0.4.4.min.js"></script>
-    <script typee="module" src="./Astar.js"></script>
+    <script type="module" src="./Astar.js"></script>
     <style type="text/css">
         body {
-            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh; /* Use full viewport height */
+            margin: 0; /* Remove default margin */
+            background-color: black; /* Set background color to black */
+    
+        }
+        #game {
+            
+            border-radius: 5px;
+            box-shadow: #314159;
         }
     </style>
 </head>
 
 <body>
+    <div id="game">
     <script type="module" src="./main.js"></script>
+    </div>
 </body>
 
 </html>
