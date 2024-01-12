@@ -26,7 +26,6 @@ class Dijkstra {
         openSet.push(this.nodes[start.y][start.x]);
 
         while (openSet.length > 0) {
-            // Sort by distance
             openSet.sort((a, b) => a.dist - b.dist);
             let current = openSet.shift();
 
@@ -49,7 +48,7 @@ class Dijkstra {
             });
         }
 
-        return []; // No path found
+        return []; 
     }
 
     getNeighbors(node) {
@@ -77,7 +76,7 @@ class Dijkstra {
     }
 
     isWall(x, y) {
-        return this.grid[y][x] !== 0; // Assuming 0 is walkable, and non-zero values are walls
+        return this.grid[y][x] === 1; 
     }
 
     reconstructPath(node) {

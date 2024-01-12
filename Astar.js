@@ -21,6 +21,23 @@ export default class Astar {
         this.grid = grid;
         this.OPEN = [];
         this.CLOSED = [];
+        this.nodes = [];
+        this.initNodes();
+    }
+
+    initNodes() {
+        for (let y = 0; y < this.grid.length; y++) {
+            this.nodes[y] = [];
+            for (let x = 0; x < this.grid[y].length; x++) {
+                this.nodes[y][x] = {
+                    x: x,
+                    y: y,
+                    dist: Infinity,
+                    visited: false,
+                    parent: null
+                };
+            }
+        }
     }
 
     findPath(start, goal) {

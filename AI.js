@@ -8,11 +8,12 @@ class AI extends Phaser.GameObjects.Sprite {
         this.setSize(8, 8, false);
         this.direction = 'right';
         this.speed = 200;
-        this.easystar = new EasyStar.js();
+        this.currentPathIndex = 0;
 
+        this.easystar = new EasyStar.js();
         // 设置网格和可行走的tile
         this.easystar.setGrid(this.scene.grid);
-        this.easystar.setAcceptableTiles([0]);
+        this.easystar.setAcceptableTiles([0, 2, 3]);
         
         this.isJPS = false;
 
@@ -28,6 +29,19 @@ class AI extends Phaser.GameObjects.Sprite {
         // this.path = astarPlugin.findPath(start, goal);
 
         this.dijkstra = new Dijkstra(this.scene.grid);
+
+        this.previousGridPosition = {
+            x: Math.floor(this.x / 40),
+            y: Math.floor(this.y / 40)
+        };
+
+        // 设置定时器，每2秒检查一次位置
+        this.scene.time.addEvent({
+            delay: 2000,
+            callback: this.checkIfTrapped,
+            callbackScope: this,
+            loop: true
+        });
 
         this.anims.create({
             key: 'left',
@@ -188,17 +202,37 @@ class AI extends Phaser.GameObjects.Sprite {
 
     followPath(path) {
         if (path && path.length > 0) {
-            let nextPoint = path[0];
-            this.moveToPoint(nextPoint);
+            if (this.currentPathIndex < path.length) {
+                let nextPoint = { x: path[this.currentPathIndex].x * 40, y: path[this.currentPathIndex].y * 40 };
+
+                this.moveToPoint(nextPoint);
+
+                console.log('Dis', Phaser.Math.Distance.Between(this.x, this.y, nextPoint.x + 20, nextPoint.y + 20));
+                // 检查是否已到达当前目标点
+                if (Phaser.Math.Distance.Between(this.x, this.y, nextPoint.x + 20, nextPoint.y + 20) < 10) {
+                    console.log('yes')
+                    this.currentPathIndex++;
+                }
+            }
+        } else {
+            // 重置路径索引和速度
+            this.currentPathIndex = 0;
+            this.body.setVelocity(0, 0);
         }
     }
 
     moveToPoint(point) {
         // 计算方向
-        const dx = point.x - this.x;
-        const dy = point.y - this.y;
+        
+        console.log('this', this.x, this.y);
+        console.log('goal', point.x, point.y);
+        
+        const dx = point.x + 20 - this.x ; 
+        const dy = point.y + 20 - this.y ;
+        console.log('dx,dy', dx, dy)
         const angle = Math.atan2(dy, dx);
         console.log(`angle${angle}`)
+        // console.log(Math.cos(angle))
         // 根据方向设置速度
         const speed = 200; // 假设AI的速度为200
         this.body.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
@@ -325,18 +359,51 @@ class AI extends Phaser.GameObjects.Sprite {
         return path;
     }
 
+    checkIfTrapped() {
+        // 当前的网格位置
+        const currentGridX = Math.floor(this.x / 40);
+        const currentGridY = Math.floor(this.y / 40);
+
+        // 检查是否卡住（即是否仍在同一个网格）
+        if (currentGridX === this.previousGridPosition.x && currentGridY === this.previousGridPosition.y) {
+            console.log("被卡住了");
+            // 进行适当的处理
+        } else {
+            // 更新网格位置
+            this.previousGridPosition.x = currentGridX;
+            this.previousGridPosition.y = currentGridY;
+        }
+    }
+
+    moveCharacter(path) {
+        var tweens = [];
+        for (var i = 0; i < path.length - 1; i++) {
+            var ex = path[i + 1].x;
+            var ey = path[i + 1].y;
+            tweens.push({
+                targets: this, // 修改为您的 AI 对象
+                x: { value: ex * 40, duration: 200 }, // 使用您的瓦片大小
+                y: { value: ey * 40, duration: 200 }
+            });
+        }
+
+        this.scene.tweens.timeline({
+            tweens: tweens
+        });
+    }
+    
     update() {
         // console.log(this.direction, this.x, this.y);
         //    1st version
-        if (this.scene.isLineOfSightClear(this, this.scene.player)) {
-            // 跳点搜索
-            this.moveToPlayer(this.scene.player);
-        } else {
-            if (this.isObstacleAhead()) {
-                this.chooseDirection();
-                // console.log(this.isObstacleAhead());
-            }
-        }
+        // if (this.scene.isLineOfSightClear(this, this.scene.player)) {
+        //     // 跳点搜索
+        //     this.moveToPlayer(this.scene.player);
+        // } else {
+        //     if (this.isObstacleAhead()) {
+        //         this.chooseDirection();
+        //         // console.log(this.isObstacleAhead());
+        //     }
+        // }
         // 2nd version
         // let path = this.jps({ x: this.x, y: this.y }, { x: this.scene.player.x, y: this.scene.player.y });
         // // console.log(path); array(0)
@@ -344,28 +411,30 @@ class AI extends Phaser.GameObjects.Sprite {
 
         // 3rd version
         // 转换坐标为网格坐标
-        // let startX = Math.floor(this.x / 40);
-        // let startY = Math.floor(this.y / 40);
-        // let endX = Math.floor(this.scene.player.x / 40);
-        // let endY = Math.floor(this.scene.player.y / 40);
+        let startX = Math.floor(this.x / 40);
+        let startY = Math.floor(this.y / 40);
+        let endX = Math.floor(this.scene.player.x / 40);
+        let endY = Math.floor(this.scene.player.y / 40);
 
-        // // console.log(startX, endX)
-        // // console.log(this.scene.grid[1])
-        // this.easystar.findPath(startX, startY, endX, endY, path => {
-        //     if (path === null || path.length === 0) {
-        //         console.log("No path found");
-        //     } else {
-        //         // 跟随找到的路径
-        //         console.log("Path was found. The first Point is " + path[0].x + " " + path[0].y);
-        //         this.followPath(path);
-        //         if (path !== null && path.length > 0) {
-        //             path.forEach((point, index) => {
-        //                 // console.log(`Step ${index}: x=${point.x}, y=${point.y}`);
-        //             });
-        //         }
-        //     }
-        // });
-        // this.easystar.calculate();
+        // console.log(startX, endX)
+        // console.log(this.scene.grid[1])
+        this.easystar.findPath(startX, startY, endX, endY, path => {
+            if (path === null || path.length === 0) {
+                console.log("No path found");
+            } else {
+                // 跟随找到的路径
+                console.log("Path was found. The first Point is " + path[0].x + " " + path[0].y);
+                this.followPath(path);
+                // this.currentPathIndex = 0; // 重置路径索引
+                // this.moveCharacter(path);
+                if (path !== null && path.length > 0) {
+                    path.forEach((point, index) => {
+                        console.log(`Step ${index}: x=${point.x}, y=${point.y}`);
+                    });
+                }
+            }
+        });
+        this.easystar.calculate();
         
         // 4th version
         
@@ -393,10 +462,13 @@ class AI extends Phaser.GameObjects.Sprite {
         // }
         
         // 7th version
-        let start = { x: Math.floor(this.x / 40), y: Math.floor(this.y / 40) };
-        let goal = { x: Math.floor(this.scene.player.x / 40), y: Math.floor(this.scene.player.y / 40) };
-        let path = this.dijkstra.findPath(start, goal);
-        this.followPath(path);
+        // let start = { x: Math.floor(this.x / 40), y: Math.floor(this.y / 40) };
+        // let goal = { x: Math.floor(this.scene.player.x / 40), y: Math.floor(this.scene.player.y / 40) };
+        // let path = this.dijkstra.findPath(start, goal);
+        // if (this.checkIfTrapped()) {
+        //     path = this.dijkstra.findPath(start, goal);
+        // }
+        // this.followPath(path);
     }
 }
 export default AI

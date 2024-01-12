@@ -49,7 +49,7 @@ class GameScene extends Phaser.Scene {
         }
         
         // 地图和其他元素的创建
-        this.player = new Player(this, 100, 100);
+        this.player = new Player(this, 540, 100);
         // 添加物理特性
         this.player.setScale(2);
         this.physics.world.enable(this.player);
@@ -58,13 +58,14 @@ class GameScene extends Phaser.Scene {
         this.player.body.setCollideWorldBounds(true);
 
         
-        this.ai = new AI(this, 450, 70);
+        this.ai = new AI(this, 450, 60);
         this.ai.setScale(2);
         this.physics.world.enable(this.ai);
         this.ai.body.setSize(16, 16, false);
         this.ai.body.setGravityY(0);
         this.ai.body.setCollideWorldBounds(true);
 
+        // 设置走过的方块
         this.PLAYER_WALKED_TILE = 2; 
         this.AI_WALKED_TILE = 3; 
         this.prevPlayerPos = { x: this.player.x, y: this.player.y };
@@ -118,8 +119,8 @@ class GameScene extends Phaser.Scene {
     getRandomPosition() {
         // 获取随机位置，且在tile的内部
         let x, y
-        x = Phaser.Math.Between(0, this.map.width - 1) * this.map.tileWidth + this.map.tileWidth / 2;
-        y = Phaser.Math.Between(0, this.map.height - 1) * this.map.tileHeight + this.map.tileHeight / 2; 
+        x = Phaser.Math.Between(0, this.map.width - 1) * this.map.tileWidth * 2 + this.map.tileWidth ;
+        y = Phaser.Math.Between(0, this.map.height - 1) * this.map.tileHeight * 2 + this.map.tileHeight ; 
 
         return { x: x, y: y };
     }
@@ -164,6 +165,7 @@ class GameScene extends Phaser.Scene {
         return true;
     }
     
+    // 可视化
     revertTile(x, y) {
         const originalIndex = 1
        
@@ -174,6 +176,7 @@ class GameScene extends Phaser.Scene {
             tile.index = originalIndex;
         }
     }
+    
     checkAndUpdateTile(entity, prevPos, tileType) {
         if (entity.x !== prevPos.x || entity.y !== prevPos.y) {
             // 转换坐标系
@@ -186,7 +189,7 @@ class GameScene extends Phaser.Scene {
             // 如果有砖块即切换
             if (tile) {
                 tile.index = tileType;
-                setTimeout(() => revertTile(entity.x, entity.y), 1000);
+                // setTimeout(() => this.revertTile(entity.x, entity.y), 1000);
             }
         }
     }
