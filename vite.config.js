@@ -1,6 +1,6 @@
 export default {
   root: './',
-  base: './',
+  base: '/',
   build: {
     outDir: 'dist',
     assetsDir: 'assets'
