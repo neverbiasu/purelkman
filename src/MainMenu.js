@@ -1,10 +1,12 @@
+import Phaser from 'phaser';
+
 class MainMenu extends Phaser.Scene {
     constructor() {
         super("MainMenu");
     }
 
     preload() {
-        this.load.image('menu', "./assets/Menu.jpg")
+        this.load.image('menu', "assets/Menu.jpg")
     }
     create() {
         this.add.image(480, 360, 'menu');

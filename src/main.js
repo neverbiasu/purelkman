@@ -1,3 +1,4 @@
+import Phaser from 'phaser';
 import GameScene from './GameScene.js';
 import MainMenu from './MainMenu.js';
 // import Preloader from './Preloader.js';
@@ -7,7 +8,7 @@ const config = {
     width: 960,
     height: 720,
     backgroundColor: '#2d2d2d',
-    parent: 'phaser-example',
+    parent: 'game', // Changed to match index.html div id 'game'
     pixelArt: true,
     physics: {
         default: 'arcade',

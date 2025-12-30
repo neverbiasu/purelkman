@@ -1,4 +1,7 @@
+import Phaser from 'phaser';
+import EasyStar from 'easystarjs';
 import Dijkstra from "./Dijstra.js";
+
 class AI extends Phaser.GameObjects.Sprite {
     constructor(scene, x, y) {
         super(scene, x, y, 'AI', 1);
