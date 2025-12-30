@@ -1,3 +1,4 @@
+import Phaser from 'phaser';
 import Player from './Player.js';
 import Coin from './Coin.js';
 import AI from './AI.js'
@@ -8,6 +9,7 @@ class GameScene extends Phaser.Scene {
     }
     
     preload() {
+        // Asset paths are relative to the public/ directory or root in Vite
         this.load.image('tiles', 'assets/Tile.jpg');
         this.load.tilemapCSV('map', 'assets/tile1.csv');
         this.load.spritesheet('player', 'assets/Dale.png', {

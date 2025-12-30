@@ -1,3 +1,5 @@
+import Phaser from 'phaser';
+
 class Coin extends Phaser.GameObjects.Sprite{
     constructor(scene, x, y) {
         super(scene, x, y, 'coin', 1);
