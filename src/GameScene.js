@@ -51,11 +51,23 @@ class GameScene extends Phaser.Scene {
         }
         
         // 地图和其他元素的创建
-        this.player = new Player(this, 540, 100);
+        let playerX = 540;
+        let playerY = 100;
+
+        if (this.isWall({x: playerX, y: playerY})) {
+            let pos = this.getRandomPosition();
+            while (this.isWall(pos)) {
+                pos = this.getRandomPosition();
+            }
+            playerX = pos.x;
+            playerY = pos.y;
+        }
+
+        this.player = new Player(this, playerX, playerY);
         // 添加物理特性
         this.player.setScale(2);
         this.physics.world.enable(this.player);
-        this.player.body.setSize(16, 16, false);
+        this.player.body.setSize(16, 16, true);
         this.player.body.setGravityY(0);
         this.player.body.setCollideWorldBounds(true);
 
@@ -88,6 +100,7 @@ class GameScene extends Phaser.Scene {
         
         this.coins.forEach(coin => {
             this.physics.add.overlap(this.player, coin, () => {
+                if (coin.isCollected) return;
                 coin.isCollected = true;
                 this.num--;
             }, null, this);
