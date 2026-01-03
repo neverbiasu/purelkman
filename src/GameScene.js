@@ -56,8 +56,7 @@ class GameScene extends Phaser.Scene {
         // 添加物理特性
         this.player.setScale(2);
         this.physics.world.enable(this.player);
-        // Reducing hitbox slightly to 14x14 (effective 28x28) to prevent sticking on corners in 40px corridors
-        this.player.body.setSize(14, 14, true);
+        this.player.body.setSize(16, 16, true);
         this.player.body.setGravityY(0);
         this.player.body.setCollideWorldBounds(true);
 
@@ -92,6 +91,7 @@ class GameScene extends Phaser.Scene {
             this.physics.add.overlap(this.player, coin, () => {
                 if (coin.isCollected) return;
                 coin.isCollected = true;
+                coin.disableBody(true, true);
                 this.num--;
             }, null, this);
         });
