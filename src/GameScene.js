@@ -35,11 +35,6 @@ class GameScene extends Phaser.Scene {
         
         this.map.setCollisionBetween(1, 1);    
 
-        // astarPlugin = this.plugins.add(Phaser.Plugin.AStar);
-        // astarPlugin.setAStarMap(map, layer);
-
-        // const layer_2 = this.map.createStaticLayer('objects', tileset, 0, 0);
-        // this.grid	= layer_2.layer.data;
         this.grid = [];
         for (let y = 0; y < this.map.height; y++) {
             let col = [];
@@ -83,9 +78,6 @@ class GameScene extends Phaser.Scene {
         // 碰撞和重叠检测
         this.physics.add.collider(this.player, layer);
         this.physics.add.collider(this.ai, layer);
-        // this.physics.add.collider(this.coin, layer);
-
-        // this.physics.add.overlap(this.player, this.coin, this.coin.collect, null, this);
         
         this.coins.forEach(coin => {
             this.physics.add.overlap(this.player, coin, () => {
@@ -97,14 +89,6 @@ class GameScene extends Phaser.Scene {
         });
 
         this.scoreText = this.add.text(this.scale.width - 120, 10, 'Score: 0', { fontSize: '20px', fill: '#ffffff' });
-        /**
-         * this.physics.add.overlap(this.player, this.coins, () => {
-            this.coins.isCollected = true;
-        }, null, this);
-         * if (this.player.x == this.coin.x && this.player.y == this.coin.y) {
-            console.log('Overlap detected');
-            this.coin.isCollected = true;
-        }**/
     }
 
     generateCoins(numberOfCoins) {
@@ -198,23 +182,6 @@ class GameScene extends Phaser.Scene {
             }
         }
     }
-    // isLineOfSightClear(grid, ai, player) {
-    //     // 计算方向
-    //     let dx = Math.sign(player.x - ai.x);
-    //     let dy = Math.sign(player.y - ai.y);
-
-    //     let x = ai.x, y = ai.y;
-    //     while (x !== player.x || y !== player.y) {
-    //         x += dx;
-    //         y += dy;
-
-    //         // 检查是否是障碍物
-    //         if (grid[y][x] === 1) {
-    //             return false;
-    //         }
-    //     }
-    //     return true;
-    // }
 
     update() {
         this.player.update();
