@@ -51,28 +51,18 @@ class GameScene extends Phaser.Scene {
         }
         
         // 地图和其他元素的创建
-        let playerX = 540;
-        let playerY = 100;
-
-        if (this.isWall({x: playerX, y: playerY})) {
-            let pos = this.getRandomPosition();
-            while (this.isWall(pos)) {
-                pos = this.getRandomPosition();
-            }
-            playerX = pos.x;
-            playerY = pos.y;
-        }
-
-        this.player = new Player(this, playerX, playerY);
+        // Player spawn at Top-Left (Tile 1,1) -> 60, 60
+        this.player = new Player(this, 60, 60);
         // 添加物理特性
         this.player.setScale(2);
         this.physics.world.enable(this.player);
-        this.player.body.setSize(16, 16, true);
+        // Reducing hitbox slightly to 14x14 (effective 28x28) to prevent sticking on corners in 40px corridors
+        this.player.body.setSize(14, 14, true);
         this.player.body.setGravityY(0);
         this.player.body.setCollideWorldBounds(true);
 
-        
-        this.ai = new AI(this, 450, 60);
+        // AI spawn at Bottom-Right (Tile 22,16) -> 900, 660
+        this.ai = new AI(this, 900, 660);
         this.ai.setScale(2);
         this.physics.world.enable(this.ai);
         this.ai.body.setSize(16, 16, false);
