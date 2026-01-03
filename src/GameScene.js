@@ -87,8 +87,7 @@ class GameScene extends Phaser.Scene {
                 coin.isCollected = true;
                 coin.disableBody(true, true);
                 this.num--;
-                this.score = (10 - this.num) * 10;
-                this.scoreText.setText('Score: ' + this.score);
+                this.updateScore();
             }, null, this);
         });
 
@@ -133,19 +132,15 @@ class GameScene extends Phaser.Scene {
         console.warn('Initial spawn position is in a wall, finding alternative position');
         
         // Try to find a valid position with maximum retries
-        let attempts = 0;
-        let position = this.getRandomPosition();
-        while (this.isWall(position) && attempts < maxRetries) {
-            position = this.getRandomPosition();
-            attempts++;
+        for (let attempts = 0; attempts < maxRetries; attempts++) {
+            let position = this.getRandomPosition();
+            if (!this.isWall(position)) {
+                return position;
+            }
         }
         
-        if (attempts >= maxRetries) {
-            console.error('Could not find valid spawn position after maximum retries, using initial position anyway');
-            return initialPosition;
-        }
-        
-        return position;
+        console.error('Could not find valid spawn position after maximum retries, using initial position anyway');
+        return initialPosition;
     }
 
     isLineOfSightClear(ai, player) {
@@ -211,6 +206,11 @@ class GameScene extends Phaser.Scene {
         }
     }
 
+    updateScore() {
+        this.score = (10 - this.num) * 10;
+        this.scoreText.setText('Score: ' + this.score);
+    }
+
     update() {
         this.player.update();
         
@@ -219,9 +219,7 @@ class GameScene extends Phaser.Scene {
                 coin.update();
             }
             if (this.num < 10) {
-                // console.log(this.num)
-                this.score = (10 - this.num) * 10;
-                this.scoreText.setText('Score: ' + this.score);
+                this.updateScore();
             }
         });
         
