@@ -47,15 +47,7 @@ class GameScene extends Phaser.Scene {
         
         // 地图和其他元素的创建
         // Player spawn at Top-Left (Tile 1,1) -> 60, 60
-        let playerSpawnPos = { x: 60, y: 60 };
-        // Validate player spawn position is not in a wall
-        if (this.isWall(playerSpawnPos)) {
-            console.warn('Player spawn position is in a wall, finding alternative position');
-            playerSpawnPos = this.getRandomPosition();
-            while (this.isWall(playerSpawnPos)) {
-                playerSpawnPos = this.getRandomPosition();
-            }
-        }
+        let playerSpawnPos = this.findValidSpawnPosition({ x: 60, y: 60 });
         this.player = new Player(this, playerSpawnPos.x, playerSpawnPos.y);
         // 添加物理特性
         this.player.setScale(2);
@@ -65,15 +57,7 @@ class GameScene extends Phaser.Scene {
         this.player.body.setCollideWorldBounds(true);
 
         // AI spawn at Bottom-Right (Tile 22,16) -> 900, 660
-        let aiSpawnPos = { x: 900, y: 660 };
-        // Validate AI spawn position is not in a wall
-        if (this.isWall(aiSpawnPos)) {
-            console.warn('AI spawn position is in a wall, finding alternative position');
-            aiSpawnPos = this.getRandomPosition();
-            while (this.isWall(aiSpawnPos)) {
-                aiSpawnPos = this.getRandomPosition();
-            }
-        }
+        let aiSpawnPos = this.findValidSpawnPosition({ x: 900, y: 660 });
         this.ai = new AI(this, aiSpawnPos.x, aiSpawnPos.y);
         this.ai.setScale(2);
         this.physics.world.enable(this.ai);
@@ -138,6 +122,30 @@ class GameScene extends Phaser.Scene {
         // 检查位置是否与墙重叠
         const tile = this.map.getTileAtWorldXY(position.x, position.y, true);
         return tile && tile.index == 1; // 如果 tile 存在且不是空的，则表示重叠
+    }
+
+    findValidSpawnPosition(initialPosition, maxRetries = 100) {
+        // Check if initial position is valid
+        if (!this.isWall(initialPosition)) {
+            return initialPosition;
+        }
+        
+        console.warn('Initial spawn position is in a wall, finding alternative position');
+        
+        // Try to find a valid position with maximum retries
+        let attempts = 0;
+        let position = this.getRandomPosition();
+        while (this.isWall(position) && attempts < maxRetries) {
+            position = this.getRandomPosition();
+            attempts++;
+        }
+        
+        if (attempts >= maxRetries) {
+            console.error('Could not find valid spawn position after maximum retries, using initial position anyway');
+            return initialPosition;
+        }
+        
+        return position;
     }
 
     isLineOfSightClear(ai, player) {
