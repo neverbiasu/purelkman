@@ -218,9 +218,6 @@ class GameScene extends Phaser.Scene {
             if (coin.active) {
                 coin.update();
             }
-            if (this.num < 10) {
-                this.updateScore();
-            }
         });
         
         this.ai.update();
