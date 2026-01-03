@@ -47,8 +47,7 @@ class GameScene extends Phaser.Scene {
         
         // 地图和其他元素的创建
         // Player spawn at Top-Left (Tile 1,1) -> 60, 60
-        let playerSpawnPos = this.findValidSpawnPosition({ x: 60, y: 60 });
-        this.player = new Player(this, playerSpawnPos.x, playerSpawnPos.y);
+        this.player = new Player(this, 60, 60);
         // 添加物理特性
         this.player.setScale(2);
         this.physics.world.enable(this.player);
@@ -57,11 +56,10 @@ class GameScene extends Phaser.Scene {
         this.player.body.setCollideWorldBounds(true);
 
         // AI spawn at Bottom-Right (Tile 22,16) -> 900, 660
-        let aiSpawnPos = this.findValidSpawnPosition({ x: 900, y: 660 });
-        this.ai = new AI(this, aiSpawnPos.x, aiSpawnPos.y);
+        this.ai = new AI(this, 900, 660);
         this.ai.setScale(2);
         this.physics.world.enable(this.ai);
-        this.ai.body.setSize(16, 16, true);
+        this.ai.body.setSize(16, 16, false);
         this.ai.body.setGravityY(0);
         this.ai.body.setCollideWorldBounds(true);
 
@@ -87,7 +85,6 @@ class GameScene extends Phaser.Scene {
                 coin.isCollected = true;
                 coin.disableBody(true, true);
                 this.num--;
-                this.updateScore();
             }, null, this);
         });
 
@@ -121,26 +118,6 @@ class GameScene extends Phaser.Scene {
         // 检查位置是否与墙重叠
         const tile = this.map.getTileAtWorldXY(position.x, position.y, true);
         return tile && tile.index == 1; // 如果 tile 存在且不是空的，则表示重叠
-    }
-
-    findValidSpawnPosition(initialPosition, maxRetries = 100) {
-        // Check if initial position is valid
-        if (!this.isWall(initialPosition)) {
-            return initialPosition;
-        }
-        
-        console.warn('Initial spawn position is in a wall, finding alternative position');
-        
-        // Try to find a valid position with maximum retries
-        for (let attempts = 0; attempts < maxRetries; attempts++) {
-            let position = this.getRandomPosition();
-            if (!this.isWall(position)) {
-                return position;
-            }
-        }
-        
-        console.error('Could not find valid spawn position after maximum retries, using initial position anyway');
-        return initialPosition;
     }
 
     isLineOfSightClear(ai, player) {
@@ -206,17 +183,17 @@ class GameScene extends Phaser.Scene {
         }
     }
 
-    updateScore() {
-        this.score = (10 - this.num) * 10;
-        this.scoreText.setText('Score: ' + this.score);
-    }
-
     update() {
         this.player.update();
         
         this.coins.forEach(coin => {
             if (coin.active) {
                 coin.update();
+            }
+            if (this.num < 10) {
+                // console.log(this.num)
+                this.score = (10 - this.num) * 10;
+                this.scoreText.setText('Score: ' + this.score);
             }
         });
         
