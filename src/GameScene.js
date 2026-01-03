@@ -47,7 +47,16 @@ class GameScene extends Phaser.Scene {
         
         // 地图和其他元素的创建
         // Player spawn at Top-Left (Tile 1,1) -> 60, 60
-        this.player = new Player(this, 60, 60);
+        let playerSpawnPos = { x: 60, y: 60 };
+        // Validate player spawn position is not in a wall
+        if (this.isWall(playerSpawnPos)) {
+            console.warn('Player spawn position is in a wall, finding alternative position');
+            playerSpawnPos = this.getRandomPosition();
+            while (this.isWall(playerSpawnPos)) {
+                playerSpawnPos = this.getRandomPosition();
+            }
+        }
+        this.player = new Player(this, playerSpawnPos.x, playerSpawnPos.y);
         // 添加物理特性
         this.player.setScale(2);
         this.physics.world.enable(this.player);
@@ -56,10 +65,19 @@ class GameScene extends Phaser.Scene {
         this.player.body.setCollideWorldBounds(true);
 
         // AI spawn at Bottom-Right (Tile 22,16) -> 900, 660
-        this.ai = new AI(this, 900, 660);
+        let aiSpawnPos = { x: 900, y: 660 };
+        // Validate AI spawn position is not in a wall
+        if (this.isWall(aiSpawnPos)) {
+            console.warn('AI spawn position is in a wall, finding alternative position');
+            aiSpawnPos = this.getRandomPosition();
+            while (this.isWall(aiSpawnPos)) {
+                aiSpawnPos = this.getRandomPosition();
+            }
+        }
+        this.ai = new AI(this, aiSpawnPos.x, aiSpawnPos.y);
         this.ai.setScale(2);
         this.physics.world.enable(this.ai);
-        this.ai.body.setSize(16, 16, false);
+        this.ai.body.setSize(16, 16, true);
         this.ai.body.setGravityY(0);
         this.ai.body.setCollideWorldBounds(true);
 
@@ -85,6 +103,8 @@ class GameScene extends Phaser.Scene {
                 coin.isCollected = true;
                 coin.disableBody(true, true);
                 this.num--;
+                this.score = (10 - this.num) * 10;
+                this.scoreText.setText('Score: ' + this.score);
             }, null, this);
         });
 
