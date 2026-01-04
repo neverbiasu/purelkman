@@ -10,16 +10,14 @@ class AI extends Phaser.GameObjects.Sprite {
         this.scene.physics.world.enable(this);
         this.body.setSize(16, 16, true); // Match player logic: 16x16 centered
 
-        this.speed = 100; // Reduced speed slightly to be manageable
+        this.speed = 200;
         this.lastPathSearchTime = 0;
         this.path = [];
-        this.pathIndex = 1;
+        this.currentPathIndex = 0;
 
         this.easystar = new EasyStar.js();
         this.easystar.setGrid(this.scene.grid);
         this.easystar.setAcceptableTiles([0, 2, 3]);
-        this.easystar.enableDiagonals(); // Enable diagonals for smoother movement if grid allows
-        this.easystar.disableCornerCutting(); // Prevent getting stuck on corners
 
         this.anims.create({
             key: 'left',
@@ -62,47 +60,48 @@ class AI extends Phaser.GameObjects.Sprite {
             this.easystar.findPath(startX, startY, endX, endY, (path) => {
                 if (path && path.length > 0) {
                     this.path = path;
-                    this.pathIndex = 1; // Target the next step (index 0 is current)
+                    this.currentPathIndex = 0;
                 }
             });
         }
 
         this.easystar.calculate();
-        this.moveAlongPath();
+        this.followPath();
     }
 
-    moveAlongPath() {
-        if (!this.path || this.path.length === 0 || this.pathIndex >= this.path.length) {
+    followPath() {
+        if (!this.path || this.path.length === 0) {
             this.body.setVelocity(0, 0);
             return;
         }
 
-        let node = this.path[this.pathIndex];
-        let targetX = node.x * 40 + 20; // Center of tile
-        let targetY = node.y * 40 + 20;
+        if (this.currentPathIndex < this.path.length) {
+            let nextPoint = { 
+                x: this.path[this.currentPathIndex].x * 40, 
+                y: this.path[this.currentPathIndex].y * 40 
+            };
 
-        const distance = Phaser.Math.Distance.Between(this.x, this.y, targetX, targetY);
+            this.moveToPoint(nextPoint);
 
-        // If reached the target (within tolerance), move to next point
-        if (distance < 5) {
-            this.pathIndex++;
-            if (this.pathIndex < this.path.length) {
-                node = this.path[this.pathIndex];
-                targetX = node.x * 40 + 20;
-                targetY = node.y * 40 + 20;
-            } else {
-                this.body.setVelocity(0, 0);
-                return;
+            // Check if reached current target point
+            if (Phaser.Math.Distance.Between(this.x, this.y, nextPoint.x + 20, nextPoint.y + 20) < 10) {
+                this.currentPathIndex++;
             }
+        } else {
+            // Reset path index and velocity
+            this.currentPathIndex = 0;
+            this.body.setVelocity(0, 0);
         }
+    }
 
-        // Move towards target
-        const angle = Math.atan2(targetY - this.y, targetX - this.x);
+    moveToPoint(point) {
+        const dx = point.x + 20 - this.x; 
+        const dy = point.y + 20 - this.y;
+        const angle = Math.atan2(dy, dx);
+        
         this.body.setVelocity(Math.cos(angle) * this.speed, Math.sin(angle) * this.speed);
-
-        // Update animations
-        const dx = targetX - this.x;
-        const dy = targetY - this.y;
+        
+        // Update animation based on movement direction
         if (Math.abs(dx) > Math.abs(dy)) {
             this.anims.play(dx > 0 ? 'right' : 'left', true);
         } else {
