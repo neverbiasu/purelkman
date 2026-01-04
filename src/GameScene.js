@@ -155,7 +155,7 @@ class GameScene extends Phaser.Scene {
     
     // 可视化
     revertTile(x, y) {
-        const originalIndex = 0
+        const originalIndex = 0;
        
         const tileX = Math.floor(x / this.map.tileWidth);
         const tileY = Math.floor(y / this.map.tileHeight);
