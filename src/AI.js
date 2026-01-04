@@ -63,14 +63,16 @@ class AI extends Phaser.GameObjects.Sprite {
                 if (path && path.length > 0) {
                     // If we have an existing path, try to find where we are in the new path
                     // to avoid backtracking
-                    if (this.path && this.path.length > 0 && this.currentPathIndex < this.path.length) {
+                    if (this.path && this.currentPathIndex < this.path.length) {
                         // Find the closest point in the new path to our current target
                         let currentTarget = this.path[this.currentPathIndex];
                         let closestIndex = 0;
                         let minDist = Infinity;
                         
                         for (let i = 0; i < path.length; i++) {
-                            let dist = Math.abs(path[i].x - currentTarget.x) + Math.abs(path[i].y - currentTarget.y);
+                            let dx = path[i].x - currentTarget.x;
+                            let dy = path[i].y - currentTarget.y;
+                            let dist = Math.sqrt(dx * dx + dy * dy);
                             if (dist < minDist) {
                                 minDist = dist;
                                 closestIndex = i;
