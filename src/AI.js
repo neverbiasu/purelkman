@@ -18,6 +18,8 @@ class AI extends Phaser.GameObjects.Sprite {
         this.easystar = new EasyStar.js();
         this.easystar.setGrid(this.scene.grid);
         this.easystar.setAcceptableTiles([0, 2, 3]);
+        this.easystar.enableDiagonals();
+        this.easystar.disableCornerCutting();
 
         this.anims.create({
             key: 'left',
@@ -59,8 +61,28 @@ class AI extends Phaser.GameObjects.Sprite {
 
             this.easystar.findPath(startX, startY, endX, endY, (path) => {
                 if (path && path.length > 0) {
-                    this.path = path;
-                    this.currentPathIndex = 0;
+                    // If we have an existing path, try to find where we are in the new path
+                    // to avoid backtracking
+                    if (this.path && this.path.length > 0 && this.currentPathIndex < this.path.length) {
+                        // Find the closest point in the new path to our current target
+                        let currentTarget = this.path[this.currentPathIndex];
+                        let closestIndex = 0;
+                        let minDist = Infinity;
+                        
+                        for (let i = 0; i < path.length; i++) {
+                            let dist = Math.abs(path[i].x - currentTarget.x) + Math.abs(path[i].y - currentTarget.y);
+                            if (dist < minDist) {
+                                minDist = dist;
+                                closestIndex = i;
+                            }
+                        }
+                        
+                        this.path = path;
+                        this.currentPathIndex = closestIndex;
+                    } else {
+                        this.path = path;
+                        this.currentPathIndex = 0;
+                    }
                 }
             });
         }
