@@ -18,8 +18,7 @@ class AI extends Phaser.GameObjects.Sprite {
         this.easystar = new EasyStar.js();
         this.easystar.setGrid(this.scene.grid);
         this.easystar.setAcceptableTiles([0, 2, 3]);
-        this.easystar.enableDiagonals(); // Enable diagonals for smoother movement if grid allows
-        this.easystar.disableCornerCutting(); // Prevent getting stuck on corners
+        this.easystar.disableDiagonals(); // Disable diagonals to prevent "weird" movement
 
         this.anims.create({
             key: 'left',
@@ -48,21 +47,34 @@ class AI extends Phaser.GameObjects.Sprite {
     }
 
     update() {
-        const now = this.scene.time.now;
+        // Calculate current tile positions
+        const startX = Math.floor(this.x / 40);
+        const startY = Math.floor(this.y / 40);
+        const playerTileX = Math.floor(this.scene.player.x / 40);
+        const playerTileY = Math.floor(this.scene.player.y / 40);
 
-        // Recalculate path every 500ms
-        if (now > this.lastPathSearchTime + 500) {
-            this.lastPathSearchTime = now;
+        // Recalculate path if player moves to a new tile
+        if (this.lastPlayerTileX !== playerTileX || this.lastPlayerTileY !== playerTileY) {
+            this.lastPlayerTileX = playerTileX;
+            this.lastPlayerTileY = playerTileY;
             
-            const startX = Math.floor(this.x / 40);
-            const startY = Math.floor(this.y / 40);
-            const endX = Math.floor(this.scene.player.x / 40);
-            const endY = Math.floor(this.scene.player.y / 40);
-
-            this.easystar.findPath(startX, startY, endX, endY, (path) => {
+            // Also update if we don't have a valid path yet
+            this.easystar.findPath(startX, startY, playerTileX, playerTileY, (path) => {
                 if (path && path.length > 0) {
                     this.path = path;
                     this.pathIndex = 1; // Target the next step (index 0 is current)
+                }
+            });
+        }
+
+        // Failsafe: if no path or stuck for 1s, retry
+        const now = this.scene.time.now;
+        if ((!this.path || this.path.length === 0) && now > this.lastPathSearchTime + 1000) {
+            this.lastPathSearchTime = now;
+            this.easystar.findPath(startX, startY, playerTileX, playerTileY, (path) => {
+                if (path && path.length > 0) {
+                    this.path = path;
+                    this.pathIndex = 1;
                 }
             });
         }

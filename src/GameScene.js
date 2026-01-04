@@ -59,7 +59,6 @@ class GameScene extends Phaser.Scene {
         this.ai = new AI(this, 900, 660);
         this.ai.setScale(2);
         this.physics.world.enable(this.ai);
-        this.ai.body.setSize(16, 16, false);
         this.ai.body.setGravityY(0);
         this.ai.body.setCollideWorldBounds(true);
 
