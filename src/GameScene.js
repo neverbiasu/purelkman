@@ -35,11 +35,6 @@ class GameScene extends Phaser.Scene {
         
         this.map.setCollisionBetween(1, 1);    
 
-        // astarPlugin = this.plugins.add(Phaser.Plugin.AStar);
-        // astarPlugin.setAStarMap(map, layer);
-
-        // const layer_2 = this.map.createStaticLayer('objects', tileset, 0, 0);
-        // this.grid	= layer_2.layer.data;
         this.grid = [];
         for (let y = 0; y < this.map.height; y++) {
             let col = [];
@@ -51,19 +46,19 @@ class GameScene extends Phaser.Scene {
         }
         
         // 地图和其他元素的创建
-        this.player = new Player(this, 540, 100);
+        // Player spawn at Top-Left (Tile 1,1) -> 60, 60
+        this.player = new Player(this, 60, 60);
         // 添加物理特性
         this.player.setScale(2);
         this.physics.world.enable(this.player);
-        this.player.body.setSize(16, 16, false);
+        this.player.body.setSize(16, 16, true);
         this.player.body.setGravityY(0);
         this.player.body.setCollideWorldBounds(true);
 
-        
-        this.ai = new AI(this, 450, 60);
+        // AI spawn at Bottom-Right (Tile 22,16) -> 900, 660
+        this.ai = new AI(this, 900, 660);
         this.ai.setScale(2);
         this.physics.world.enable(this.ai);
-        this.ai.body.setSize(16, 16, false);
         this.ai.body.setGravityY(0);
         this.ai.body.setCollideWorldBounds(true);
 
@@ -82,26 +77,17 @@ class GameScene extends Phaser.Scene {
         // 碰撞和重叠检测
         this.physics.add.collider(this.player, layer);
         this.physics.add.collider(this.ai, layer);
-        // this.physics.add.collider(this.coin, layer);
-
-        // this.physics.add.overlap(this.player, this.coin, this.coin.collect, null, this);
         
         this.coins.forEach(coin => {
             this.physics.add.overlap(this.player, coin, () => {
+                if (coin.isCollected) return;
                 coin.isCollected = true;
+                coin.disableBody(true, true);
                 this.num--;
             }, null, this);
         });
 
         this.scoreText = this.add.text(this.scale.width - 120, 10, 'Score: 0', { fontSize: '20px', fill: '#ffffff' });
-        /**
-         * this.physics.add.overlap(this.player, this.coins, () => {
-            this.coins.isCollected = true;
-        }, null, this);
-         * if (this.player.x == this.coin.x && this.player.y == this.coin.y) {
-            console.log('Overlap detected');
-            this.coin.isCollected = true;
-        }**/
     }
 
     generateCoins(numberOfCoins) {
@@ -195,23 +181,6 @@ class GameScene extends Phaser.Scene {
             }
         }
     }
-    // isLineOfSightClear(grid, ai, player) {
-    //     // 计算方向
-    //     let dx = Math.sign(player.x - ai.x);
-    //     let dy = Math.sign(player.y - ai.y);
-
-    //     let x = ai.x, y = ai.y;
-    //     while (x !== player.x || y !== player.y) {
-    //         x += dx;
-    //         y += dy;
-
-    //         // 检查是否是障碍物
-    //         if (grid[y][x] === 1) {
-    //             return false;
-    //         }
-    //     }
-    //     return true;
-    // }
 
     update() {
         this.player.update();
